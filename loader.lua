@@ -2,6 +2,7 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local currentPlaceId = game.PlaceId
 
+-- Map game Place IDs to their exact GitHub raw script URLs
 local SUPPORTED_GAMES = {
    [120219252362013] = "https://raw.githubusercontent.com/mikunnn0015/MikunnnnHub/main/ThrowFoodForEggs.lua",
 }
@@ -11,8 +12,8 @@ local targetScriptUrl = SUPPORTED_GAMES[currentPlaceId]
 if targetScriptUrl then
    Rayfield:Notify({
       Title = "MikunnHub",
-      Content = "Loading script for game...",
-      Duration = 2,
+      Content = "Game recognized! Loading automation script...",
+      Duration = 3,
    })
    
    local success, err = pcall(function()
@@ -22,7 +23,7 @@ if targetScriptUrl then
    if not success then
       Rayfield:Notify({
          Title = "Execution Error",
-         Content = tostring(err),
+         Content = "Failed to run game script: " .. tostring(err),
          Duration = 6,
       })
    end

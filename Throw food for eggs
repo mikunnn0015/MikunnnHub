@@ -1,4 +1,3 @@
-
 -- Rayfield UI Script: Professional Automation Hub (Exact CrossLine Teleport & Loop)
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 

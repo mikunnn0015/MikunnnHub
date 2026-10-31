@@ -3,8 +3,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "MikunnHub | Throw food for animals",
-   LoadingTitle = "Initializing Hub...",
-   LoadingSubtitle = "by ENI",
+   LoadingTitle = "loading Hub...",
+   LoadingSubtitle = "by mikunn_is_dumb",
    ConfigurationSaving = {
       Enabled = false,
       FolderName = nil,

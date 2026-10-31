@@ -1,4 +1,4 @@
--- Rayfield UI Script: Professional Automation Hub (Exact CrossLine Teleport & Loop)
+-- Rayfield UI Script: Professional Automation Hub
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -28,6 +28,7 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local TeleportService = game:GetService("TeleportService")
 
 -- Remote References
 local TrainingStop = Remotes:WaitForChild("Training_Stop")
@@ -67,7 +68,6 @@ local function GetThrowPart()
          return crossLine
       end
    end
-   -- Fallback scan if StarterArea or CrossLine changes name structure
    for _, obj in ipairs(workspace:GetDescendants()) do
       if obj:IsA("BasePart") and obj.Name == "CrossLine" then
          return obj
@@ -97,9 +97,10 @@ end
 ------------------------------------------------------------------------
 -- TABS SETUP
 ------------------------------------------------------------------------
-local TrainingTab = Window:CreateTab("Training", 4483362458)
-local ThrowingTab = Window:CreateTab("Throwing", 6023426915)
-local ManagementTab = Window:CreateTab("Pets & Upgrades", 6023426810)
+local TrainingTab   = Window:CreateTab("Training")
+local ThrowingTab   = Window:CreateTab("Throwing")
+local ManagementTab = Window:CreateTab("Pets & Upgrades")
+local SettingsTab   = Window:CreateTab("Settings")
 
 ------------------------------------------------------------------------
 -- TRAINING TAB
@@ -165,7 +166,7 @@ TrainingTab:CreateToggle({
 })
 
 ------------------------------------------------------------------------
--- THROWING TAB (EXACT CROSSLINE TELEPORT & LOOP)
+-- THROWING TAB
 ------------------------------------------------------------------------
 ThrowingTab:CreateSection("Throwing Automation")
 
@@ -179,14 +180,13 @@ ThrowingTab:CreateToggle({
       
       if Value then
          _G.AutoThrowThread = task.spawn(function()
-            -- Instant Teleport directly to CrossLine on activation
             local throwPart = GetThrowPart()
             local char = LocalPlayer.Character
             local root = char and char:FindFirstChild("HumanoidRootPart")
             
             if root and throwPart then
                root.CFrame = throwPart.CFrame + Vector3.new(0, 3, 0)
-               task.wait(0.4) -- Physics settle delay
+               task.wait(0.4)
             end
             
             while _G.AutoThrow do
@@ -197,19 +197,15 @@ ThrowingTab:CreateToggle({
                   local currentThrowPart = GetThrowPart()
                   
                   if currentRoot and humanoid and humanoid.Health > 0 then
-                     -- Keep locked to the throwing line area if forced away
                      if currentThrowPart and (currentRoot.Position - currentThrowPart.Position).Magnitude > 12 then
                         currentRoot.CFrame = currentThrowPart.CFrame + Vector3.new(0, 3, 0)
                         task.wait(0.2)
                      end
                      
-                     -- Execute sequence
                      ThrowStart:InvokeServer()
                      task.wait(0.25)
-                     
                      ThrowResolve:InvokeServer(0.925)
                      task.wait(0.25)
-                     
                      ThrowComplete:InvokeServer()
                   end
                end)
@@ -327,6 +323,191 @@ ManagementTab:CreateToggle({
             end
          end)
       end
+   end,
+})
+
+------------------------------------------------------------------------
+-- SETTINGS TAB
+------------------------------------------------------------------------
+SettingsTab:CreateSection("UI Controls")
+
+SettingsTab:CreateKeybind({
+   Name = "Toggle Menu Keybind",
+   CurrentKeybind = "LeftControl",
+   HoldToInteract = false,
+   Flag = "UI Toggle Keybind",
+   Callback = function(Keybind)
+      if Rayfield and Rayfield.Flags then
+         Rayfield:ToggleUI()
+      end
+   end,
+})
+
+SettingsTab:CreateSection("Player Utilities")
+
+SettingsTab:CreateToggle({
+   Name = "Anti-AFK (Prevent Kick)",
+   CurrentValue = false,
+   Flag = "AntiAFKToggle",
+   Callback = function(Value)
+      _G.AntiAFK = Value
+      if Value then
+         local vu = game:GetService("VirtualUser")
+         LocalPlayer.Idled:Connect(function()
+            if _G.AntiAFK then
+               vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+               task.wait(1)
+               vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end
+         end)
+         Rayfield:Notify({ Title = "Anti-AFK", Content = "Successfully enabled!", Duration = 3 })
+      end
+   end,
+})
+
+_G.WalkSpeedValue = 16
+SettingsTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 250},
+   Increment = 1,
+   CurrentValue = 16,
+   Flag = "WalkSpeedSlider",
+   Callback = function(Value)
+      _G.WalkSpeedValue = Value
+      if _G.EnableCustomSpeed then
+         local char = LocalPlayer.Character
+         local hum = char and char:FindFirstChildOfClass("Humanoid")
+         if hum then hum.WalkSpeed = Value end
+      end
+   end,
+})
+
+SettingsTab:CreateToggle({
+   Name = "Enable Custom WalkSpeed",
+   CurrentValue = false,
+   Flag = "EnableSpeedToggle",
+   Callback = function(Value)
+      _G.EnableCustomSpeed = Value
+      task.spawn(function()
+         while _G.EnableCustomSpeed do
+            pcall(function()
+               local char = LocalPlayer.Character
+               local hum = char and char:FindFirstChildOfClass("Humanoid")
+               if hum then hum.WalkSpeed = _G.WalkSpeedValue end
+            end)
+            task.wait(0.5)
+         end
+         if not _G.EnableCustomSpeed then
+            pcall(function()
+               local char = LocalPlayer.Character
+               local hum = char and char:FindFirstChildOfClass("Humanoid")
+               if hum then hum.WalkSpeed = 16 end
+            end)
+         end
+      end)
+   end,
+})
+
+_G.JumpPowerValue = 50
+SettingsTab:CreateSlider({
+   Name = "JumpPower",
+   Range = {50, 300},
+   Increment = 1,
+   CurrentValue = 50,
+   Flag = "JumpPowerSlider",
+   Callback = function(Value)
+      _G.JumpPowerValue = Value
+      if _G.EnableCustomJump then
+         local char = LocalPlayer.Character
+         local hum = char and char:FindFirstChildOfClass("Humanoid")
+         if hum then
+            hum.UseJumpPower = true
+            hum.JumpPower = Value
+         end
+      end
+   end,
+})
+
+SettingsTab:CreateToggle({
+   Name = "Enable Custom JumpPower",
+   CurrentValue = false,
+   Flag = "EnableJumpToggle",
+   Callback = function(Value)
+      _G.EnableCustomJump = Value
+      task.spawn(function()
+         while _G.EnableCustomJump do
+            pcall(function()
+               local char = LocalPlayer.Character
+               local hum = char and char:FindFirstChildOfClass("Humanoid")
+               if hum then
+                  hum.UseJumpPower = true
+                  hum.JumpPower = _G.JumpPowerValue
+               end
+            end)
+            task.wait(0.5)
+         end
+         if not _G.EnableCustomJump then
+            pcall(function()
+               local char = LocalPlayer.Character
+               local hum = char and char:FindFirstChildOfClass("Humanoid")
+               if hum then hum.JumpPower = 50 end
+            end)
+         end
+      end)
+   end,
+})
+
+SettingsTab:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Flag = "InfJumpToggle",
+   Callback = function(Value)
+      _G.InfJump = Value
+      local uis = game:GetService("UserInputService")
+      uis.JumpRequest:Connect(function()
+         if _G.InfJump then
+            local char = LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+         end
+      end)
+   end,
+})
+
+SettingsTab:CreateSection("Server Utilities")
+
+SettingsTab:CreateButton({
+   Name = "Rejoin Server",
+   Callback = function()
+      Rayfield:Notify({ Title = "Rejoining...", Content = "Attempting to rejoin server.", Duration = 2 })
+      task.wait(1)
+      if #Players:GetPlayers() <= 1 then
+         LocalPlayer:Kick("\nRejoining...")
+         task.wait(1)
+         TeleportService:Teleport(game.PlaceId, LocalPlayer)
+      else
+         TeleportService:Teleport(game.PlaceId, LocalPlayer)
+      end
+   end,
+})
+
+SettingsTab:CreateButton({
+   Name = "Server Hop (Find New Server)",
+   Callback = function()
+      Rayfield:Notify({ Title = "Server Hopping", Content = "Searching for another server...", Duration = 2 })
+      local servers = {}
+      local req = pcall(function()
+         servers = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100")).data
+      end)
+      if req and servers then
+         for _, s in ipairs(servers) do
+             if type(s) == "table" and s.maxPlayers and s.playing and s.playing < s.maxPlayers and s.id ~= game.JobId then
+                 TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
+                 return
+             end
+         end
+      end
+      Rayfield:Notify({ Title = "Error", Content = "Could not find an available server to hop into.", Duration = 3 })
    end,
 })
 

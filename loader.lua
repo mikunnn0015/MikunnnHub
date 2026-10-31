@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local currentPlaceId = game.PlaceId
 
 local SUPPORTED_GAMES = {
-   [120219252362013] = "https://raw.githubusercontent.com/mikunnn0015/MikunnnnHub/main/ThrowFoodForEggs.lua",
+   [120219252362013] = "https://raw.githubusercontent.com/mikunnn0015/MikunnnHub/MikunnnHub/ThrowFoodForEggs.lua",
 }
 
 local targetScriptUrl = SUPPORTED_GAMES[currentPlaceId]

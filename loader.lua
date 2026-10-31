@@ -4,7 +4,7 @@ local currentPlaceId = game.PlaceId
 
 -- Map game Place IDs to their exact GitHub raw script URLs
 local SUPPORTED_GAMES = {
-   [120219252362013] = "https://raw.githubusercontent.com/mikunnn0015/MikunnnnHub/main/ThrowFoodForEggs.lua",
+   [120219252362013] = "https://raw.githubusercontent.com/mikunn0015/MikunnHub/MikunnHub/ThrowFoodForEggs.lua",
 }
 
 local targetScriptUrl = SUPPORTED_GAMES[currentPlaceId]

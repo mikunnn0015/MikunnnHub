@@ -332,7 +332,7 @@ ManagementTab:CreateToggle({
 
 Rayfield:Notify({
    Title = "Hub Loaded Successfully",
-   Content = "Auto Throw linked directly to CrossLine teleportation.",
+   Content = "Thanks for using my script!",
    Duration = 5,
    Image = 4483362458,
 })
